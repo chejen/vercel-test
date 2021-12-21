@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "build": "rollup -c",
-    "dev": "rollup -c -w",
-    "start": "node server.js"
+    "start": "rollup -c -w",
+    "start:server": "node server.js"
   },
   "engines" : { 
     "node" : ">=14.0.0" 
