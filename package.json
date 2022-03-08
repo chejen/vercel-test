@@ -1,30 +1,20 @@
 {
-  "name": "svelte-app",
+  "name": "vercel-test",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "rollup -c",
-    "start": "rollup -c -w",
-    "start:server": "node server.js"
+    "start": "node api/index.js"
   },
   "engines" : { 
     "node" : ">=14.0.0" 
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^17.0.0",
-    "@rollup/plugin-node-resolve": "^11.0.0",
-    "rollup": "^2.3.4",
-    "rollup-plugin-css-only": "^3.1.0",
-    "rollup-plugin-livereload": "^2.0.0",
-    "rollup-plugin-svelte": "^7.0.0",
-    "rollup-plugin-terser": "^7.0.0",
-    "svelte": "^3.0.0"
   },
   "dependencies": {
-    "@koa/router": "10.1.1",
-    "handlebars": "4.7.7",
-    "koa": "2.13.4",
-    "koa-static": "5.0.0",
-    "koa-views": "8.0.0"
+    "axios": "0.26.0",
+    "cheerio": "1.0.0-rc.10",
+    "cors": "2.8.5",
+    "express": "4.17.3",
+    "uuid": "8.3.2"
   }
 }
