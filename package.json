@@ -3,18 +3,24 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node api/index.js"
+    "start": "node api/index.js",
+    "build": "webpack"
   },
   "engines" : { 
     "node" : ">=14.0.0" 
   },
   "devDependencies": {
+    "webpack": "5.70.0",
+    "webpack-cli": "4.9.2",
+    "webpack-dev-server": "4.7.4"
   },
   "dependencies": {
     "axios": "0.26.0",
     "cheerio": "1.0.0-rc.10",
     "cors": "2.8.5",
     "express": "4.17.3",
+    "firebase": "9.6.8",
+    "lit": "2.2.0",
     "uuid": "8.3.2"
   }
 }

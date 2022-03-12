@@ -50,7 +50,7 @@ app.get('/api/currency', cors(), (req, res) => {
           const data = getData($(el));
           if (data[0] in result) {
             delete result[data[0]]
-            result[data[0].match(/\(([^)]+)\)/)[1]] = data[1];
+            result[data[0].match(/\(([^)]+)\)/)[1]] = +data[1];
           }
         });
 
