@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node api/index.js",
+    "dev": "webpack serve",
     "build": "webpack"
   },
   "engines" : { 

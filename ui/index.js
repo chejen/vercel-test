@@ -44,6 +44,11 @@ class FooBar extends LitElement {
     this.init();
   }
 
+  // createRenderRoot() {
+  //   const root = super.createRenderRoot();
+  //   return root;
+  // }
+
   connectedCallback() {
     super.connectedCallback();
     window.addEventListener('configinjected', this);
@@ -267,9 +272,9 @@ class FooBar extends LitElement {
     for (const key in valueByCurrency) {
       valueByCurrency[key] = valueByCurrency[key].toFixed(2);
       if (key in this.latestExchangeRate) {
-        const v = (valueByCurrency[key] * this.latestExchangeRate[key]).toFixed(4);
+        const v = (valueByCurrency[key] * this.latestExchangeRate[key]).toFixed(2);
         value[key] = v;
-        diff[key] = (valueByCurrency[key] * this.latestExchangeRate[key] - costByCurrency[key]).toFixed(4);
+        diff[key] = (valueByCurrency[key] * this.latestExchangeRate[key] - costByCurrency[key]).toFixed(2);
         totalValue += +v;
         // valueByCurrency[key] += ` (NTD$${v} / <font color="${diff >= 0 ? 'red' : 'green'}">${diff}</font>)`;
       }
@@ -293,21 +298,46 @@ class FooBar extends LitElement {
       起始日期: <input id="init_date" type="text" placeholder="${new Date().toLocaleDateString('zh-TW')}"><br/>
       <button @click=${this.addDepositAccount}>add</button><br/>
 
+      <div style="border: 1px solid orange; margin: 5px 0; padding: 5px; display: flex">
+        <div style="flex: 2; display: flex; flex-direction: column; align-items: center;">
+          <div style="font-size: 22px;">成本 (NTD)</div>
+          <ul>
+          ${Object.keys(costByCurrency).sort().map((key) => 
+            html`<li>${key}: ${costByCurrency[key]}</li>`
+          )}
+          </ul>
+          <div style="font-size: 36px;">${totalCost}</div>
+        </div>
+        <div style="flex: 2; display: flex; flex-direction: column; align-items: center;">
+          <div style="font-size: 22px;">目前匯率</div>
+          <ul>
+          ${Object.keys(this.latestExchangeRate)
+            .filter((key) => key !== 'time').sort().map((key) => 
+                html`<li>${key}: ${this.latestExchangeRate[key]}</li>`
+          )}
+          </ul>
+          <div style="font-size: 36px; text-align: center;">${this.latestExchangeRate.time}</div>
+        </div>
+
+        <div style="flex: 3; display: flex; flex-direction: column; align-items: center;">
+          <div style="font-size: 22px;">估值 (NTD)</div>
+          <ul>
+          ${Object.keys(diff).map((key) => {
+            return html`<li>${key}: ${valueByCurrency[key]} (${value[key]}, <font color="${diff[key] >= 0 ? 'red' : 'green'}">${diff[key]}</font>)</li>`
+          })}
+          </ul>
+          <div style="font-size: 36px;">${totalValue.toFixed(2)}</div>
+          <div style="font-size: 36px;">
+            (<font color="${totalValue >= totalCost ? 'red' : 'green'}">${(totalValue - totalCost).toFixed(2)}</font>)
+          </div>
+        </div>
+      </div>
+
       <button @click=${this.sortByAccountAsc}>sort by time_deposit_account(asc)</button><br/>
       <button @click=${this.sortByAccountDesc}>sort by time_deposit_account(desc)</button><br/>
       <button @click=${this.sortByMonth}>sort by month</button><br/>
       <button @click=${this.sortByCurrency}>sort by currency</button><br/>
 
-      <div style="border: 1px solid orange; margin: 5px 0; padding: 5px;">
-        總成本: ${totalCost} ${JSON.stringify(costByCurrency)}<br/>
-        目前匯率: ${JSON.stringify(this.latestExchangeRate)}<br/>
-        目前估值:
-        ${Object.keys(diff).map((key) => {
-          return html`(${key} ${valueByCurrency[key]}, NTD$${value[key]}, <font color="${diff[key] >= 0 ? 'red' : 'green'}">${diff[key]}</font>) `
-        })}
-        <br/>
-        總估值: ${totalValue} (<font color="${totalValue >= totalCost ? 'red' : 'green'}">${(totalValue - totalCost).toFixed(4)}</font>)
-      </div>
       ${this.depositList.map((deposit) => {
         const expiryDate = deposit.history
           ? `${deposit.history[deposit.history.length - 1].interest_start_year + 2}/${deposit.month}/${deposit.day}`
