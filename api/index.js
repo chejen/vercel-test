@@ -1,8 +1,27 @@
-const app = require('express')();
-const cors = require('cors');
+const express = require('express');
+// const cors = require('cors');
 const axios = require("axios");
 const cheerio = require('cheerio');
 const { v4 } = require('uuid');
+
+const app = express();
+console.log('process.env.NODE_ENV ', process.env.NODE_ENV );
+
+if (process.env.NODE_ENV === 'development') {
+  const webpack = require('webpack');
+  const config = require('../webpack.config.js');
+  const compiler = webpack(config);
+  app.use(
+    require('webpack-dev-middleware')(compiler, {
+      publicPath: '/dist',
+    })
+  );
+  app.use(require('webpack-hot-middleware')(compiler));
+  app.use('/', express.static(require('path').join(__dirname, '..', 'public')));
+  app.listen(3456, () => {
+    console.log(`Example app listening on port ${3456}`)
+  });
+}
 
 const getData = (el) => {
   return [
@@ -29,7 +48,7 @@ app.get('/api/hello', (req, res) => {
   res.json({ name: 'Hello Vercel', date: new Date() });
 });
 
-app.get('/api/currency', cors(), (req, res) => {
+app.get('/api/currency', /* cors(), */ (req, res) => {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'application/json');
 

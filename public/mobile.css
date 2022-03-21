@@ -1,0 +1,28 @@
+@media only screen and (max-width: 768px) {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  body::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  body {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  #container {
+    display: unset;
+  }
+  .summary.container {
+    flex-direction: column;
+  }
+  .summary.title {
+    height: unset;
+  }
+
+  #sorting {
+    flex-direction: column;
+  }
+  #sorting button {
+    margin: 0 2px;
+  }
+}

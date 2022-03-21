@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, css } from 'lit';
 
 import { initializeApp } from "firebase/app";
 import {
@@ -35,6 +35,13 @@ class FooBar extends LitElement {
       },
     };
   }
+
+  static styles = css`
+    :host {
+      display: block;
+      height: 100%;
+    }
+  `;
 
   constructor() {
     super();
@@ -85,12 +92,12 @@ class FooBar extends LitElement {
       this.db = getFirestore(app);
       console.info('[Info] Firebase has initialized.');
 
-      // fetch('https://vercel-test-chejen.vercel.app/api/currency')
+      // fetch('/api/currency')
       //   .then((res) => res.json())
       //   .then((res) => {
       //     this.latestExchangeRate = res;
       //   });
-      this.latestExchangeRate = {"time":"2022/03/10 23:41","USD":"28.255","AUD":"20.675","NZD":"19.31","CNY":"4.449"};
+      this.latestExchangeRate = {"time":"2022/03/21 11:32","USD":28.415,"AUD":20.96,"NZD":19.55,"CNY":4.44};
 
       // this.getDeposits().then(res => {
       //   this.depositList = res || [];
@@ -285,144 +292,162 @@ class FooBar extends LitElement {
     }
 
     return html`
-      定期存款帳戶: <input id="time_deposit_account" type="text"><br/>
-      幣別:
-      <select id="currency">
-        <option value="USD" selected="selected">USD</option>
-        <option value="CNY">CNY</option>
-        <option value="AUD">AUD</option>
-        <option value="NZD">NZD</option>
-      </select><br/>
-      成本(NTD): <input id="cost" type="text"><br/>
-      原始匯率: <input id="exchange_rate" type="text"><br/>
-      起始日期: <input id="init_date" type="text" placeholder="${new Date().toLocaleDateString('zh-TW')}"><br/>
-      <button @click=${this.addDepositAccount}>add</button><br/>
+      <link href="base.css" rel="stylesheet">
+      <link href="mobile.css" rel="stylesheet">
 
-      <div style="border: 1px solid orange; margin: 5px 0; padding: 5px; display: flex">
-        <div style="flex: 2; display: flex; flex-direction: column; align-items: center;">
-          <div style="font-size: 22px;">成本 (NTD)</div>
-          <ul>
-          ${Object.keys(costByCurrency).sort().map((key) => 
-            html`<li>${key}: ${costByCurrency[key]}</li>`
-          )}
-          </ul>
-          <div style="font-size: 36px;">${totalCost}</div>
-        </div>
-        <div style="flex: 2; display: flex; flex-direction: column; align-items: center;">
-          <div style="font-size: 22px;">目前匯率</div>
-          <ul>
-          ${Object.keys(this.latestExchangeRate)
-            .filter((key) => key !== 'time').sort().map((key) => 
-                html`<li>${key}: ${this.latestExchangeRate[key]}</li>`
-          )}
-          </ul>
-          <div style="font-size: 36px; text-align: center;">${this.latestExchangeRate.time}</div>
-        </div>
+      <div id="container">
+        <div class="summary container">
+          <div>
+            <div class="summary title">
+              Amount<br/>
+              <div class="summary time">(In NTD Equivalent)</div>
+            </div>
+            <ul>
+            ${Object.keys(costByCurrency).sort().map((key) =>
+              html`<li>(${key}) NTD$${costByCurrency[key]}</li>`
+            )}
+            </ul>
+            <div class="summary value">${totalCost}</div>
+          </div>
+          <div>
+            <div class="summary title">
+              Exchange Rate<br/>
+              <div class="summary time">(${this.latestExchangeRate.time})</div>
+            </div>
+            <ul>
+            ${Object.keys(this.latestExchangeRate)
+              .filter((key) => key !== 'time').sort().map((key) =>
+                  html`<li>${key}: ${this.latestExchangeRate[key]}</li>`
+            )}
+            </ul>
 
-        <div style="flex: 3; display: flex; flex-direction: column; align-items: center;">
-          <div style="font-size: 22px;">估值 (NTD)</div>
-          <ul>
-          ${Object.keys(diff).map((key) => {
-            return html`<li>${key}: ${valueByCurrency[key]} (${value[key]}, <font color="${diff[key] >= 0 ? 'red' : 'green'}">${diff[key]}</font>)</li>`
-          })}
-          </ul>
-          <div style="font-size: 36px;">${totalValue.toFixed(2)}</div>
-          <div style="font-size: 36px;">
-            (<font color="${totalValue >= totalCost ? 'red' : 'green'}">${(totalValue - totalCost).toFixed(2)}</font>)
+          </div>
+          <div>
+            <div class="summary title">估值 (NTD)</div>
+            <ul>
+            ${Object.keys(diff).map((key) => {
+              return html`<li>(${key}: ${valueByCurrency[key]}) NTD$${value[key]}, <font color="${diff[key] >= 0 ? '#FF5230' : '#65DD39'}">${diff[key]}</font></li>`
+            })}
+            </ul>
+            <div class="summary value">${totalValue.toFixed(2)}</div>
+            <div class="summary value">
+              (<font color="${totalValue >= totalCost ? '#FF5230' : '#65DD39'}">${(totalValue - totalCost).toFixed(2)}</font>)
+            </div>
           </div>
         </div>
-      </div>
 
-      <button @click=${this.sortByAccountAsc}>sort by time_deposit_account(asc)</button><br/>
-      <button @click=${this.sortByAccountDesc}>sort by time_deposit_account(desc)</button><br/>
-      <button @click=${this.sortByMonth}>sort by month</button><br/>
-      <button @click=${this.sortByCurrency}>sort by currency</button><br/>
+        <div id="operating_area">
+          <div id="sorting">
+            <button @click=${this.sortByAccountAsc}>sort by time_deposit_account(asc)</button><br/>
+            <button @click=${this.sortByAccountDesc}>sort by time_deposit_account(desc)</button><br/>
+            <button @click=${this.sortByMonth}>sort by month</button><br/>
+            <button @click=${this.sortByCurrency}>sort by currency</button><br/>
+          </div>
 
-      ${this.depositList.map((deposit) => {
-        const expiryDate = deposit.history
-          ? `${deposit.history[deposit.history.length - 1].interest_start_year + 2}/${deposit.month}/${deposit.day}`
-          : null;
-        let currVal = 0;
-        if (deposit.history) {
-          const lastRec = deposit.history[deposit.history.length - 1];
-          currVal = (
-            (lastRec.time_deposit_amount + lastRec.received_gross_interest_amount).toFixed(2) *
-            this.latestExchangeRate[deposit.currency]
-          ).toFixed(4);
-        }
-        return html`<div style="border: 1px solid lightblue; margin: 5px 0; padding: 5px;">
-          <button hidden @click=${this.removeDepositAccount} data-time-deposit-account="${deposit.time_deposit_account}">
-            delete
-          </button><br/>
-          (${deposit.time_deposit_account}) 幣別: ${deposit.currency}, 成本: ${deposit.cost}, 匯率: ${deposit.exchange_rate},
-          目前估值: ${currVal}
-          (<font color="${currVal >= deposit.cost ? 'red' : 'green'}">${(currVal - deposit.cost).toFixed(4)}</font>)
-          <table>
-            <tr>
-              <th>起息日(利率基準日)</th>
-              <th>到期日</th>
-              <th>定存金額</th>
-              <th>已領毛息總額</th>
-              <th>定存利率(%)</th>
-              <th>(到期金額)</th>
-            </tr>
-            ${deposit.history ? deposit.history.map(rec => {
-              return html`<tr>
-                <th>${rec.interest_start_year}/${deposit.month}/${deposit.day}</th>
-                <th>${rec.interest_start_year + 1}/${deposit.month}/${deposit.day}</th>
-                <th>${rec.time_deposit_amount}</th>
-                <th>${rec.received_gross_interest_amount}</th>
-                <th>${rec.interest_rate + '%'}</th>
-                <th>${(rec.time_deposit_amount + rec.received_gross_interest_amount).toFixed(2)}</th>
-              </tr>`;
-            }) : null}
-            ${!deposit.history
+          <div id="addition">
+            定期存款帳戶: <input id="time_deposit_account" type="text"><br/>
+            幣別:
+            <select id="currency">
+              <option value="USD" selected="selected">USD</option>
+              <option value="CNY">CNY</option>
+              <option value="AUD">AUD</option>
+              <option value="NZD">NZD</option>
+            </select><br/>
+            NTD: <input id="cost" type="text"><br/>
+            原始匯率: <input id="exchange_rate" type="text"><br/>
+            起始日期: <input id="init_date" type="text" placeholder="${new Date().toLocaleDateString('zh-TW')}"><br/>
+            <button @click=${this.addDepositAccount}>add</button>
+          </div>
+        </div>
+
+        <div id="details">
+        ${this.depositList.map((deposit) => {
+          const expiryDate = deposit.history
+            ? `${deposit.history[deposit.history.length - 1].interest_start_year + 2}/${deposit.month}/${deposit.day}`
+            : null;
+          let currVal = 0;
+          if (deposit.history) {
+            const lastRec = deposit.history[deposit.history.length - 1];
+            currVal = (
+              (lastRec.time_deposit_amount + lastRec.received_gross_interest_amount).toFixed(2) *
+              this.latestExchangeRate[deposit.currency]
+            ).toFixed(4);
+          }
+          return html`<div style="border: 1px solid #3B6BA7; background-color: white; margin: 5px; padding: 5px;">
+            <button hidden @click=${this.removeDepositAccount} data-time-deposit-account="${deposit.time_deposit_account}">
+              delete
+            </button><br/>
+            (${deposit.time_deposit_account}) 幣別: ${deposit.currency}, NTD: ${deposit.cost}, 匯率: ${deposit.exchange_rate},
+            目前估值: ${currVal}
+            (<font color="${currVal >= deposit.cost ? 'red' : 'green'}">${(currVal - deposit.cost).toFixed(4)}</font>)
+            <table>
+              <tr>
+                <th>Interest Start Date</th>
+                <th>Interest End Date</th>
+                <th>Amount</th>
+                <th>Gross Interest Amount</th>
+                <th>Interest Rate (%)</th>
+                <th>(Net Worth)</th>
+              </tr>
+              ${deposit.history ? deposit.history.map(rec => {
+                return html`<tr>
+                  <td>${rec.interest_start_year}/${deposit.month}/${deposit.day}</td>
+                  <td>${rec.interest_start_year + 1}/${deposit.month}/${deposit.day}</td>
+                  <td>${rec.time_deposit_amount}</td>
+                  <td>${rec.received_gross_interest_amount}</td>
+                  <td>${rec.interest_rate + '%'}</td>
+                  <td>${(rec.time_deposit_amount + rec.received_gross_interest_amount).toFixed(2)}</td>
+                </tr>`;
+              }) : null}
+              ${!deposit.history
+                ? html`<tr @click=${this.addDepositHistory}>
+                  <td>
+                    <input
+                      name="interest_start_year"
+                      type="hidden"
+                      value="${deposit.year}"
+                    >
+                    <span>
+                      ${deposit.year}/${deposit.month}/${deposit.day}
+                    </span>
+                  </td>
+                  <td>
+                    <input name="time_deposit_account" type="hidden" value="${deposit.time_deposit_account}">
+                    <span>${deposit.year + 1}/${deposit.month}/${deposit.day}</span>
+                  </td>
+                  <td><input name="time_deposit_amount" type="text"></td>
+                  <td><input name="received_gross_interest_amount" type="text"></td>
+                  <td><input name="interest_rate" type="text"></td>
+                  <td><button>新增</button></td>
+                </tr>`
+                : null}
+              ${(deposit.history && +new Date(expiryDate) < Date.now())
               ? html`<tr @click=${this.addDepositHistory}>
-                <th>
+                <td>
                   <input
                     name="interest_start_year"
                     type="hidden"
-                    value="${deposit.year}"
+                    value="${deposit.history[deposit.history.length - 1].interest_start_year + 1}"
                   >
                   <span>
-                    ${deposit.year}/${deposit.month}/${deposit.day}
+                    ${deposit.history[deposit.history.length - 1].interest_start_year + 1}/${deposit.month}/${deposit.day}
                   </span>
-                </th>
-                <th>
+                </td>
+                <td>
                   <input name="time_deposit_account" type="hidden" value="${deposit.time_deposit_account}">
-                  <span>${deposit.year + 1}/${deposit.month}/${deposit.day}</span>
-                </th>
-                <th><input name="time_deposit_amount" type="text"></th>
-                <th><input name="received_gross_interest_amount" type="text"></th>
-                <th><input name="interest_rate" type="text"></th>
-                <th><button>新增</button></th>
+                  <span>${expiryDate}</span>
+                </td>
+                <td><input name="time_deposit_amount" type="text"></td>
+                <td><input name="received_gross_interest_amount" type="text"></td>
+                <td><input name="interest_rate" type="text"></td>
+                <td><button>新增</button></td>
               </tr>`
               : null}
-            ${(deposit.history && +new Date(expiryDate) < Date.now())
-            ? html`<tr @click=${this.addDepositHistory}>
-              <th>
-                <input
-                  name="interest_start_year"
-                  type="hidden"
-                  value="${deposit.history[deposit.history.length - 1].interest_start_year + 1}"
-                >
-                <span>
-                  ${deposit.history[deposit.history.length - 1].interest_start_year + 1}/${deposit.month}/${deposit.day}
-                </span>
-              </th>
-              <th>
-                <input name="time_deposit_account" type="hidden" value="${deposit.time_deposit_account}">
-                <span>${expiryDate}</span>
-              </th>
-              <th><input name="time_deposit_amount" type="text"></th>
-              <th><input name="received_gross_interest_amount" type="text"></th>
-              <th><input name="interest_rate" type="text"></th>
-              <th><button>新增</button></th>
-            </tr>`
-            : null}
-          </table>
-        </div>`;
-      })}
+            </table>
+          </div>`;
+        })}
+        </div>
+      </div>
     `;
   }
 }
