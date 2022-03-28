@@ -34,6 +34,7 @@ html, body {
 .summary.title {
   height: 50px;
   font-size: 24px;
+  text-align: center;
 }
 .summary.time {
   font-size: 16px;
@@ -68,8 +69,27 @@ html, body {
   padding: 5px;
   background-color: #0584D8;
   color: white;
+  display: flex;
+  flex-wrap: wrap;
+}
+#addition .input {
+  align-items: center;
+  box-sizing: border-box;
+  padding: 3px 10px;
+  width: 25%;
+  display: flex;
+}
+#addition .input input, #addition .input select {
+  flex: 1;
+  height: 20px;
+}
+#addition .input select, #addition .input button {
+  height: 25px;
 }
 
+tr:nth-child(even) {
+  background: lightgray;
+}
 th {
   text-decoration: underline;
 }
