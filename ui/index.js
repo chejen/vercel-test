@@ -38,6 +38,10 @@ class FooBar extends LitElement {
         attribute: false,
         type: String,
       },
+      showOperatingArea: {
+        attribute: false,
+        type: Boolean,
+      },
     };
   }
 
@@ -53,6 +57,7 @@ class FooBar extends LitElement {
     this.depositList = [];
     this.latestExchangeRate = {};
     this.sortBy = 'time_deposit_account';
+    this.showOperatingArea = false;
     this.init();
   }
 
@@ -109,12 +114,15 @@ class FooBar extends LitElement {
       //   .then((res) => {
       //     this.latestExchangeRate = res;
       //   });
-      this.latestExchangeRate = 
-      {"time":"2022/03/28 20:40","USD":28.69,"AUD":21.455,"NZD":19.77,"CNY":4.475};
-      // {"time":"2022/03/24 23:00","USD":28.525,"AUD":21.355,"NZD":19.79,"CNY":4.451}
-      // {"time":"2022/03/23 23:00","USD":28.48,"AUD":21.185,"NZD":19.73,"CNY":4.441}
-      // {"time":"2022/03/22 21:46","USD":28.465,"AUD":21.085,"NZD":19.69,"CNY":4.449}
-      // {"time":"2022/03/21 11:32","USD":28.415,"AUD":20.96,"NZD":19.55,"CNY":4.44};
+      setTimeout(() => {
+        this.latestExchangeRate = 
+          {"time":"2022/03/29 23:11","USD":28.7,"AUD":21.425,"NZD":19.77,"CNY":4.486};
+        // {"time":"2022/03/28 20:40","USD":28.69,"AUD":21.455,"NZD":19.77,"CNY":4.475};
+        // {"time":"2022/03/24 23:00","USD":28.525,"AUD":21.355,"NZD":19.79,"CNY":4.451}
+        // {"time":"2022/03/23 23:00","USD":28.48,"AUD":21.185,"NZD":19.73,"CNY":4.441}
+        // {"time":"2022/03/22 21:46","USD":28.465,"AUD":21.085,"NZD":19.69,"CNY":4.449}
+        // {"time":"2022/03/21 11:32","USD":28.415,"AUD":20.96,"NZD":19.55,"CNY":4.44};
+      }, 100);
 
       // this.getDeposits().then(res => {
       //   console.error('[getDeposits] res =>', JSON.stringify(res));
@@ -309,6 +317,16 @@ class FooBar extends LitElement {
     ];
   }
 
+  barClickHandler() {
+    this.showOperatingArea = !this.showOperatingArea;
+  }
+
+  operatingAreaClickHandler(evt) {
+    if (evt.target.tagName === 'BUTTON') {
+      this.showOperatingArea = false;
+    }
+  }
+
   render() {
     const costByCurrency = {};
     const valueByCurrency = {};
@@ -343,6 +361,7 @@ class FooBar extends LitElement {
       <link href="base.css" rel="stylesheet">
       <link href="mobile.css" rel="stylesheet">
 
+      <div id="bar" @click="${this.barClickHandler}">BAR</div>
       <div id="container">
         <div class="summary container">
           <div>
@@ -371,7 +390,10 @@ class FooBar extends LitElement {
 
           </div>
           <div>
-            <div class="summary title">估值 (NTD)</div>
+            <div class="summary title">
+              Net Worth<br/>
+              <div class="summary time">(In NTD Equivalent)</div>
+            </div>
             <ul data-type="detail">
             ${Object.keys(diff).map((key) => {
               return html`<li>(${key}: ${valueByCurrency[key]}) NTD$${value[key]}, <font color="${diff[key] >= 0 ? '#FF5230' : '#65DD39'}">${diff[key]}</font></li>`
@@ -384,7 +406,12 @@ class FooBar extends LitElement {
           </div>
         </div>
 
-        <div id="operating_area">
+        <div id="mask" class="${this.showOperatingArea ? 'show' : ''}"></div>
+        <div
+          id="operating_area"
+          class="${this.showOperatingArea ? 'show' : ''}"
+          @click="${this.operatingAreaClickHandler}"
+        >
           <div id="sorting">
             <button @click=${this.sortByAccountAsc}>sort by time_deposit_account(asc)</button>
             <button @click=${this.sortByAccountDesc}>sort by time_deposit_account(desc)</button>
@@ -421,12 +448,13 @@ class FooBar extends LitElement {
           let currVal = 0;
           if (deposit.history) {
             const lastRec = deposit.history[deposit.history.length - 1];
-            currVal = (
+            currVal = +(
               (lastRec.time_deposit_amount + lastRec.received_gross_interest_amount).toFixed(2) *
-              this.latestExchangeRate[deposit.currency]
+              (this.latestExchangeRate[deposit.currency] || 0)
             ).toFixed(4);
           }
-          if (!deposit.pl) {
+
+          if (!deposit.pl && currVal) {
             deposit.pl = (currVal - deposit.cost).toFixed(4);
           }
           
